@@ -96,8 +96,6 @@ export function GeneratorApp() {
   const [difficultyMode, setDifficultyMode] = useState("Campuran");
   const [difficultyDist, setDifficultyDist] = useState({ mudah: 5, sedang: 7, sulit: 3 });
 
-  // Cognitive Level Setting
-  const [useCognitiveLevel, setUseCognitiveLevel] = useState(true);
 
   // Generated Data
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1238,9 +1236,8 @@ Format JSON (1 objek soal tunggal):
                                   type="text"
                                   value={row.materi}
                                   onChange={(e) => {
-                                    const u = [...gridData];
-                                    u[idx] = { ...u[idx], materi: e.target.value };
-                                    setGridData(u);
+                                    const val = e.target.value;
+                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, materi: val } : g)));
                                   }}
                                   className="w-full rounded border-none bg-transparent p-1 focus:bg-card focus:ring-1 focus:ring-ring"
                                 />
@@ -1249,9 +1246,8 @@ Format JSON (1 objek soal tunggal):
                                 <textarea
                                   value={row.indikator}
                                   onChange={(e) => {
-                                    const u = [...gridData];
-                                    u[idx] = { ...u[idx], indikator: e.target.value };
-                                    setGridData(u);
+                                    const val = e.target.value;
+                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, indikator: val } : g)));
                                   }}
                                   rows={2}
                                   className="w-full rounded border-none bg-transparent p-1 focus:bg-card focus:ring-1 focus:ring-ring"
@@ -1261,9 +1257,8 @@ Format JSON (1 objek soal tunggal):
                                 <select
                                   value={row.levelKognitif}
                                   onChange={(e) => {
-                                    const u = [...gridData];
-                                    u[idx] = { ...u[idx], levelKognitif: e.target.value };
-                                    setGridData(u);
+                                    const val = e.target.value;
+                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, levelKognitif: val } : g)));
                                   }}
                                   className="rounded border border-border bg-transparent p-1"
                                 >
@@ -1274,9 +1269,8 @@ Format JSON (1 objek soal tunggal):
                                 <select
                                   value={row.tingkatKesulitan}
                                   onChange={(e) => {
-                                    const u = [...gridData];
-                                    u[idx] = { ...u[idx], tingkatKesulitan: e.target.value };
-                                    setGridData(u);
+                                    const val = e.target.value;
+                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, tingkatKesulitan: val } : g)));
                                   }}
                                   className="rounded border border-border bg-transparent p-1"
                                 >
@@ -1289,9 +1283,8 @@ Format JSON (1 objek soal tunggal):
                                   type="number"
                                   value={row.skor}
                                   onChange={(e) => {
-                                    const u = [...gridData];
-                                    u[idx] = { ...u[idx], skor: parseInt(e.target.value) || 1 };
-                                    setGridData(u);
+                                    const val = parseInt(e.target.value) || 1;
+                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, skor: val } : g)));
                                   }}
                                   className="w-full rounded border border-border p-1 text-center font-bold"
                                 />
@@ -1428,9 +1421,8 @@ Format JSON (1 objek soal tunggal):
                                     <textarea
                                       value={q.stimulus}
                                       onChange={(e) => {
-                                        const u = [...questionsData];
-                                        u[idx] = { ...u[idx], stimulus: e.target.value };
-                                        setQuestionsData(u);
+                                        const val = e.target.value;
+                                        setQuestionsData(questionsData.map((item, i) => (i === idx ? { ...item, stimulus: val } : item)));
                                       }}
                                       rows={2}
                                       className="w-full border-none bg-transparent text-xs outline-none focus:bg-muted"
@@ -1442,9 +1434,8 @@ Format JSON (1 objek soal tunggal):
                                   <textarea
                                     value={q.questionText}
                                     onChange={(e) => {
-                                      const u = [...questionsData];
-                                      u[idx] = { ...u[idx], questionText: e.target.value };
-                                      setQuestionsData(u);
+                                      const val = e.target.value;
+                                      setQuestionsData(questionsData.map((item, i) => (i === idx ? { ...item, questionText: val } : item)));
                                     }}
                                     rows={2}
                                     className="w-full rounded border border-border p-2 text-xs font-semibold"
@@ -1459,11 +1450,15 @@ Format JSON (1 objek soal tunggal):
                                         type="text"
                                         value={opt}
                                         onChange={(e) => {
-                                          const u = [...questionsData];
-                                          const options = [...(u[idx].options ?? [])];
-                                          options[oIdx] = e.target.value;
-                                          u[idx] = { ...u[idx], options };
-                                          setQuestionsData(u);
+                                          const val = e.target.value;
+                                          setQuestionsData(
+                                            questionsData.map((item, i) => {
+                                              if (i !== idx) return item;
+                                              const options = [...(item.options ?? [])];
+                                              options[oIdx] = val;
+                                              return { ...item, options };
+                                            }),
+                                          );
                                         }}
                                         className="rounded border border-border bg-card p-1.5 text-xs"
                                       />
@@ -1490,9 +1485,8 @@ Format JSON (1 objek soal tunggal):
                                     type="text"
                                     value={q.answerKey}
                                     onChange={(e) => {
-                                      const u = [...questionsData];
-                                      u[idx] = { ...u[idx], answerKey: e.target.value };
-                                      setQuestionsData(u);
+                                      const val = e.target.value;
+                                      setQuestionsData(questionsData.map((item, i) => (i === idx ? { ...item, answerKey: val } : item)));
                                     }}
                                     className="rounded border border-input bg-card p-1 font-bold text-success"
                                   />
@@ -1502,9 +1496,8 @@ Format JSON (1 objek soal tunggal):
                                   <textarea
                                     value={q.explanation}
                                     onChange={(e) => {
-                                      const u = [...questionsData];
-                                      u[idx] = { ...u[idx], explanation: e.target.value };
-                                      setQuestionsData(u);
+                                      const val = e.target.value;
+                                      setQuestionsData(questionsData.map((item, i) => (i === idx ? { ...item, explanation: val } : item)));
                                     }}
                                     rows={2}
                                     className="w-full rounded border border-border bg-card p-2 text-xs"
@@ -1554,9 +1547,8 @@ Format JSON (1 objek soal tunggal):
                                 <textarea
                                   value={q.rubrik || "Jawaban benar mendapat skor penuh."}
                                   onChange={(e) => {
-                                    const u = [...questionsData];
-                                    u[idx] = { ...u[idx], rubrik: e.target.value };
-                                    setQuestionsData(u);
+                                    const val = e.target.value;
+                                    setQuestionsData(questionsData.map((item, i) => (i === idx ? { ...item, rubrik: val } : item)));
                                   }}
                                   rows={2}
                                   className="w-full rounded border border-border bg-card p-2"

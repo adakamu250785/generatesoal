@@ -38,58 +38,94 @@ const C = {
   zebraFill: "F8FAFC",
 };
 
-const bCell = { style: BorderStyle.SINGLE, size: 4, color: C.border } as const;
-const bNone = { style: BorderStyle.NONE, size: 0, color: "auto" } as const;
-const bAll = { top: bCell, bottom: bCell, left: bCell, right: bCell } as const;
-const bNoneAll = { top: bNone, bottom: bNone, left: bNone, right: bNone } as const;
-const bTableNone = { top: bNone, bottom: bNone, left: bNone, right: bNone, insideHorizontal: bNone, insideVertical: bNone };
-
+type BorderStyleValue = (typeof BorderStyle)[keyof typeof BorderStyle];
 type Alignment = (typeof AlignmentType)[keyof typeof AlignmentType];
 
-const t = (text: string, o: { bold?: boolean; italics?: boolean; size?: number; color?: string } = {}) =>
-  new TextRun({ text, font: FONT, ...o });
+interface BorderSpec {
+  style: BorderStyleValue;
+  size: number;
+  color: string;
+  space?: number;
+}
+
+const bCell: BorderSpec = { style: BorderStyle.SINGLE, size: 4, color: C.border };
+const bNone: BorderSpec = { style: BorderStyle.NONE, size: 0, color: "auto" };
+const bAll = {
+  top: { ...bCell },
+  bottom: { ...bCell },
+  left: { ...bCell },
+  right: { ...bCell },
+};
+const bNoneAll = {
+  top: { ...bNone },
+  bottom: { ...bNone },
+  left: { ...bNone },
+  right: { ...bNone },
+};
+const bTableNone = {
+  top: { ...bNone },
+  bottom: { ...bNone },
+  left: { ...bNone },
+  right: { ...bNone },
+  insideHorizontal: { ...bNone },
+  insideVertical: { ...bNone },
+};
+
+type RunOpts = { bold?: boolean | undefined; italics?: boolean | undefined; size?: number | undefined; color?: string | undefined };
+
+const t = (text: string, o: RunOpts = {}) =>
+  new TextRun({
+    text,
+    font: FONT,
+    ...(o.bold ? { bold: true } : {}),
+    ...(o.italics ? { italics: true } : {}),
+    ...(o.size !== undefined ? { size: o.size } : {}),
+    ...(o.color !== undefined ? { color: o.color } : {}),
+  });
 
 const p = (
   children: TextRun[],
   opts: {
-    alignment?: Alignment;
-    spacing?: { before?: number; after?: number };
-    indent?: { left?: number; right?: number; hanging?: number };
-    pageBreakBefore?: boolean;
-    border?: {
-      bottom?: { style: BorderStyle; size: number; color: string; space?: number };
-    };
+    alignment?: Alignment | undefined;
+    spacing?: { before?: number; after?: number } | undefined;
+    indent?: { left?: number; right?: number; hanging?: number } | undefined;
+    pageBreakBefore?: boolean | undefined;
+    border?: { bottom?: BorderSpec | undefined } | undefined;
   } = {},
 ) => new Paragraph({ children, ...opts });
 
 interface CellOpts {
-  width?: number;
-  text?: string;
-  bold?: boolean;
-  align?: Alignment;
-  fill?: string;
-  color?: string;
-  size?: number;
-  colSpan?: number;
-  borderless?: boolean;
+  width?: number | undefined;
+  text?: string | undefined;
+  bold?: boolean | undefined;
+  align?: Alignment | undefined;
+  fill?: string | undefined;
+  color?: string | undefined;
+  size?: number | undefined;
+  colSpan?: number | undefined;
+  borderless?: boolean | undefined;
 }
 
+type CellArgs = ConstructorParameters<typeof TableCell>[0];
+type ParaArgs = ConstructorParameters<typeof Paragraph>[0];
+
 function cell(o: CellOpts): TableCell {
-  return new TableCell({
-    width: o.width ? { size: o.width, type: WidthType.PERCENTAGE } : undefined,
-    shading: o.fill ? { type: ShadingType.CLEAR, color: "auto", fill: o.fill } : undefined,
-    columnSpan: o.colSpan,
+  const args: CellArgs = {
     verticalAlign: VerticalAlign.CENTER,
     borders: o.borderless ? bNoneAll : bAll,
     margins: { top: 60, bottom: 60, left: 100, right: 100 },
     children: [
       new Paragraph({
-        alignment: o.align,
         spacing: { before: 20, after: 20 },
         children: [t(o.text ?? "", { bold: o.bold, size: o.size ?? 18, color: o.color })],
-      }),
+        ...(o.align !== undefined ? { alignment: o.align } : {}),
+      } satisfies ParaArgs),
     ],
-  });
+  };
+  if (o.width !== undefined) args.width = { size: o.width, type: WidthType.PERCENTAGE };
+  if (o.fill !== undefined) args.shading = { type: ShadingType.CLEAR, color: "auto", fill: o.fill };
+  if (o.colSpan !== undefined) args.columnSpan = o.colSpan;
+  return new TableCell(args);
 }
 
 // ---------- Bagian kepala dokumen ----------
@@ -174,21 +210,21 @@ function gridTable(grid: GridRow[]): Table {
     ),
   });
 
-  const bodyRows = grid.map(
-    (g, idx) =>
-      new TableRow({
-        children: [
-          cell({ text: String(g.no), width: GRID_WIDTHS[0], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: g.materi || "", width: GRID_WIDTHS[1], fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: g.indikator || "", width: GRID_WIDTHS[2], fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: g.levelKognitif || "", width: GRID_WIDTHS[3], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: g.tingkatKesulitan || "", width: GRID_WIDTHS[4], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: g.bentukSoal || "", width: GRID_WIDTHS[5], fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: String(g.nomorSoal ?? g.no), width: GRID_WIDTHS[6], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-          cell({ text: String(g.skor ?? 1), width: GRID_WIDTHS[7], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-        ],
-      }),
-  );
+  const bodyRows = grid.map((g, idx) => {
+    const fill = idx % 2 ? C.zebraFill : undefined;
+    return new TableRow({
+      children: [
+        cell({ text: String(g.no), width: GRID_WIDTHS[0], align: AlignmentType.CENTER, fill }),
+        cell({ text: g.materi || "", width: GRID_WIDTHS[1], fill }),
+        cell({ text: g.indikator || "", width: GRID_WIDTHS[2], fill }),
+        cell({ text: g.levelKognitif || "", width: GRID_WIDTHS[3], align: AlignmentType.CENTER, fill }),
+        cell({ text: g.tingkatKesulitan || "", width: GRID_WIDTHS[4], align: AlignmentType.CENTER, fill }),
+        cell({ text: g.bentukSoal || "", width: GRID_WIDTHS[5], fill }),
+        cell({ text: String(g.nomorSoal ?? g.no), width: GRID_WIDTHS[6], align: AlignmentType.CENTER, fill }),
+        cell({ text: String(g.skor ?? 1), width: GRID_WIDTHS[7], align: AlignmentType.CENTER, fill }),
+      ],
+    });
+  });
 
   const totalSkor = grid.reduce((s, g) => s + (Number(g.skor) || 0), 0);
   const totalRow = new TableRow({
@@ -294,11 +330,12 @@ function answerSummaryTable(questions: Question[]): Table {
   const rows = questions.map((q, idx) => {
     const key = String(q.answerKey ?? "");
     const short = key.length > 90 ? `${key.slice(0, 90)}…` : key;
+    const fill = idx % 2 ? C.zebraFill : undefined;
     return new TableRow({
       children: [
-        cell({ text: String(q.no), width: KEY_TABLE_WIDTHS[0], align: AlignmentType.CENTER, fill: idx % 2 ? C.zebraFill : undefined }),
-        cell({ text: q.bentukSoal, width: KEY_TABLE_WIDTHS[1], fill: idx % 2 ? C.zebraFill : undefined }),
-        cell({ text: short, width: KEY_TABLE_WIDTHS[2], bold: true, color: C.green, fill: idx % 2 ? C.zebraFill : undefined }),
+        cell({ text: String(q.no), width: KEY_TABLE_WIDTHS[0], align: AlignmentType.CENTER, fill }),
+        cell({ text: q.bentukSoal, width: KEY_TABLE_WIDTHS[1], fill }),
+        cell({ text: short, width: KEY_TABLE_WIDTHS[2], bold: true, color: C.green, fill }),
       ],
     });
   });
@@ -340,8 +377,7 @@ export function buildDocx(
   questionsData: Question[],
   exportType: ExportType,
 ): Document {
-  const subj = identity.subject;
-  const children: (Paragraph | Table)[] = [...coverChildren(identity, subj)];
+  const children: (Paragraph | Table)[] = [...coverChildren(identity, identity.subject)];
   let firstPart = true;
 
   const addPart = (heading: string, part: (Paragraph | Table)[]) => {
