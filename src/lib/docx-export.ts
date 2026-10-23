@@ -83,16 +83,21 @@ const t = (text: string, o: RunOpts = {}) =>
     ...(o.color !== undefined ? { color: o.color } : {}),
   });
 
-const p = (
-  children: TextRun[],
-  opts: {
-    alignment?: Alignment | undefined;
-    spacing?: { before?: number; after?: number } | undefined;
-    indent?: { left?: number; right?: number; hanging?: number } | undefined;
-    pageBreakBefore?: boolean | undefined;
-    border?: { bottom?: BorderSpec | undefined } | undefined;
-  } = {},
-) => new Paragraph({ children, ...opts });
+const p = (children: TextRun[], opts: {
+  alignment?: Alignment | undefined;
+  spacing?: { before?: number; after?: number } | undefined;
+  indent?: { left?: number; right?: number; hanging?: number } | undefined;
+  pageBreakBefore?: boolean | undefined;
+  border?: { bottom?: BorderSpec | undefined } | undefined;
+} = {}) => {
+  const args: ParaArgs = { children };
+  if (opts.alignment !== undefined) args.alignment = opts.alignment;
+  if (opts.spacing !== undefined) args.spacing = opts.spacing;
+  if (opts.indent !== undefined) args.indent = opts.indent;
+  if (opts.pageBreakBefore) args.pageBreakBefore = true;
+  if (opts.border !== undefined) args.border = opts.border;
+  return new Paragraph(args);
+};
 
 interface CellOpts {
   width?: number | undefined;
@@ -110,7 +115,7 @@ type CellArgs = ConstructorParameters<typeof TableCell>[0];
 type ParaArgs = ConstructorParameters<typeof Paragraph>[0];
 
 function cell(o: CellOpts): TableCell {
-  const args: CellArgs = {
+  return new TableCell({
     verticalAlign: VerticalAlign.CENTER,
     borders: o.borderless ? bNoneAll : bAll,
     margins: { top: 60, bottom: 60, left: 100, right: 100 },
@@ -121,11 +126,10 @@ function cell(o: CellOpts): TableCell {
         ...(o.align !== undefined ? { alignment: o.align } : {}),
       } satisfies ParaArgs),
     ],
-  };
-  if (o.width !== undefined) args.width = { size: o.width, type: WidthType.PERCENTAGE };
-  if (o.fill !== undefined) args.shading = { type: ShadingType.CLEAR, color: "auto", fill: o.fill };
-  if (o.colSpan !== undefined) args.columnSpan = o.colSpan;
-  return new TableCell(args);
+    ...(o.width !== undefined ? { width: { size: o.width, type: WidthType.PERCENTAGE } } : {}),
+    ...(o.fill !== undefined ? { shading: { type: ShadingType.CLEAR, color: "auto", fill: o.fill } } : {}),
+    ...(o.colSpan !== undefined ? { columnSpan: o.colSpan } : {}),
+  } satisfies CellArgs);
 }
 
 // ---------- Bagian kepala dokumen ----------
@@ -195,7 +199,7 @@ function gridTable(grid: GridRow[]): Table {
     children: GRID_HEADERS.map(
       (h, i) =>
         new TableCell({
-          width: { size: GRID_WIDTHS[i], type: WidthType.PERCENTAGE },
+          width: { size: GRID_WIDTHS[i] ?? 0, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, color: "auto", fill: C.headerFill },
           verticalAlign: VerticalAlign.CENTER,
           borders: bAll,
