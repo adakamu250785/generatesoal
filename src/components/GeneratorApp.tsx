@@ -420,6 +420,7 @@ Kembalikan JSON:
       return;
     }
     const targetQ = questionsData[index];
+    if (!targetQ) return;
     showNotification(`Memperbaiki soal nomor ${targetQ.no} dengan AI...`, "info");
 
     const subj = identity.subject === "Lainnya" ? identity.customSubject : identity.subject;
