@@ -96,8 +96,6 @@ export function GeneratorApp() {
   const [difficultyMode, setDifficultyMode] = useState("Campuran");
   const [difficultyDist, setDifficultyDist] = useState({ mudah: 5, sedang: 7, sulit: 3 });
 
-  // Cognitive Level Setting
-  const [useCognitiveLevel, setUseCognitiveLevel] = useState(true);
 
   // Generated Data
   const [isGenerating, setIsGenerating] = useState(false);
