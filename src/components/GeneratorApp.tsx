@@ -1358,10 +1358,10 @@ Format JSON (1 objek soal tunggal):
                       <div className="flex flex-wrap gap-2">
                         {([
                           { id: "kisi", label: "Unduh Kisi-Kisi Only" },
-                          { id: "soal", label: "Unduh Naskah Soal" },
+                          { id: "soal", label: "Unduh Naskah Soal Siswa" },
                           { id: "kunci", label: "Unduh Kunci & Pembahasan" },
                           { id: "rubrik", label: "Unduh Pedoman Penskoran" },
-                          { id: "lengkap", label: "Unduh Paket Lengkap (All-in-One)" },
+                          { id: "lengkap", label: "Unduh Paket Lengkap Guru (Kisi-kisi, Naskah, Kunci, Rubrik)" },
                         ] as { id: ExportType; label: string }[]).map((exp) => (
                           <button
                             key={exp.id}

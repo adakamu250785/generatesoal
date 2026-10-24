@@ -87,3 +87,24 @@ describe("ekspor docx", () => {
     expect(doc).toBeTruthy();
   });
 });
+
+import { groupByBentuk, instructionFor, useTwoColumns } from "@/lib/docx-export";
+
+describe("format naskah soal siswa", () => {
+  it("opsi pendek disusun 2 kolom, opsi panjang 1 kolom", () => {
+    expect(useTwoColumns(["A. 12", "B. 15", "C. 18", "D. 20"])).toBe(true);
+    expect(useTwoColumns(["A. " + "x".repeat(60), "B. y", "C. z", "D. w"])).toBe(false);
+  });
+  it("petunjuk pilihan ganda memakai tanda silang", () => {
+    expect(instructionFor("Pilihan Ganda")).toContain("tanda silang (x)");
+  });
+  it("soal dikelompokkan per bentuk soal", () => {
+    expect(groupByBentuk(questions).map((g) => g.bentuk)).toEqual(["Pilihan Ganda", "Uraian"]);
+  });
+  it("paket lengkap memuat kisi-kisi, naskah, kunci, dan rubrik", async () => {
+    const JSZip = (await import("jszip")).default;
+    const buf = await Packer.toBuffer(buildDocx(identity, grid, questions, "lengkap"));
+    const xml = await (await JSZip.loadAsync(buf)).file("word/document.xml")!.async("string");
+    for (const s of ["KISI-KISI", "NASKAH SOAL", "KUNCI JAWABAN", "RUBRIK", "Nama Siswa"]) expect(xml).toContain(s);
+  });
+});
