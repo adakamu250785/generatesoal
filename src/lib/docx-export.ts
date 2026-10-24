@@ -377,12 +377,177 @@ function rubricChildren(q: Question): Paragraph[] {
 
 // ---------- Rakitan dokumen ----------
 
+// ---------- Naskah soal format lembar ujian siswa ----------
+
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+
+export function instructionFor(bentuk: string): string {
+  const b = bentuk.toLowerCase();
+  if (b.includes("kompleks")) return "Berilah tanda centang (✓) pada semua jawaban yang benar!";
+  if (b.includes("pilihan ganda")) return "Berilah tanda silang (x) pada huruf a, b, c atau d pada jawaban yang kamu anggap paling benar!";
+  if (b.includes("benar")) return "Tentukan Benar (B) atau Salah (S) pada setiap pernyataan berikut!";
+  if (b.includes("jodoh")) return "Jodohkanlah pernyataan di sebelah kiri dengan jawaban yang tepat di sebelah kanan!";
+  if (b.includes("isian")) return "Isilah titik-titik di bawah ini dengan jawaban yang tepat!";
+  return "Jawablah pertanyaan-pertanyaan berikut dengan tepat!";
+}
+
+const stripLetter = (opt: string) => opt.replace(/^\s*[A-Ea-e][.)]\s*/, "");
+
+/** Opsi pendek disusun 2 kolom (a|c, b|d); opsi panjang 1 kolom. */
+export function useTwoColumns(options: string[]): boolean {
+  return options.length === 4 && options.every((o) => stripLetter(o).length <= 40);
+}
+
+function optionsBlock(options: string[]): (Paragraph | Table)[] {
+  const labeled = options.map((o, i) => `${String.fromCharCode(97 + i)}. ${stripLetter(o)}`);
+  if (!useTwoColumns(options)) {
+    return labeled.map((o) => p([t(o)], { indent: { left: 851, hanging: 284 }, spacing: { after: 20 } }));
+  }
+  const pc = (text: string) =>
+    new TableCell({
+      borders: bNoneAll,
+      width: { size: 50, type: WidthType.PERCENTAGE },
+      margins: { top: 0, bottom: 0, left: 0, right: 80 },
+      children: [new Paragraph({ children: [t(text)] })],
+    });
+  return [
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      indent: { size: 567, type: WidthType.DXA },
+      borders: bTableNone,
+      rows: [
+        new TableRow({ children: [pc(labeled[0] ?? ""), pc(labeled[2] ?? "")] }),
+        new TableRow({ children: [pc(labeled[1] ?? ""), pc(labeled[3] ?? "")] }),
+      ],
+    }),
+  ];
+}
+
+function studentQuestion(q: Question, displayNo: number): (Paragraph | Table)[] {
+  const out: (Paragraph | Table)[] = [];
+  if (q.stimulus) {
+    out.push(
+      p([t(q.stimulus, { italics: true })], {
+        alignment: AlignmentType.JUSTIFIED,
+        indent: { left: 567 },
+        spacing: { before: 120, after: 60 },
+      }),
+    );
+  }
+  out.push(
+    p([t(`${displayNo}.\t`), t(q.questionText)], {
+      alignment: AlignmentType.JUSTIFIED,
+      indent: { left: 567, hanging: 567 },
+      spacing: { before: 100, after: 40 },
+    }),
+  );
+  if (q.options?.length) out.push(...optionsBlock(q.options));
+  (q.statements ?? []).forEach((st, i) => {
+    const text = typeof st === "string" ? st : st?.teks ?? String(st);
+    out.push(p([t(`${String.fromCharCode(97 + i)}. ${text}   ( B / S )`)], { indent: { left: 851, hanging: 284 }, spacing: { after: 20 } }));
+  });
+  if ((q.leftItems?.length ?? 0) > 0) out.push(matchTable(q));
+  const b = q.bentukSoal.toLowerCase();
+  if (b.includes("uraian") || b.includes("isian")) {
+    out.push(p([t("Jawab: .............................................................................................................")], { indent: { left: 567 }, spacing: { before: 40, after: 60 } }));
+  }
+  return out;
+}
+
+export function groupByBentuk(questions: Question[]): { bentuk: string; items: Question[] }[] {
+  const groups: { bentuk: string; items: Question[] }[] = [];
+  questions.forEach((q) => {
+    const g = groups.find((x) => x.bentuk === q.bentukSoal);
+    if (g) g.items.push(q);
+    else groups.push({ bentuk: q.bentukSoal, items: [q] });
+  });
+  return groups;
+}
+
+function studentIdentityTable(identity: AssessmentIdentity): Table {
+  const subj = identity.customSubject || identity.subject;
+  const left = ["Nama Siswa", "No. Induk", "Hari Tanggal"];
+  const leftVal = [": ....................................", ": ....................................", ": ...................................."];
+  const right = ["Mata Pelajaran", "Kelas", "Waktu"];
+  const rightVal = [`: ${subj}`, `: ${identity.grade}`, ": 90 Menit"];
+  const box = (labels: string[], vals: string[]) =>
+    new TableCell({
+      borders: bAll,
+      width: { size: 50, type: WidthType.PERCENTAGE },
+      margins: { top: 80, bottom: 80, left: 120, right: 120 },
+      children: labels.map(
+        (l, i) =>
+          new Paragraph({
+            tabStops: [{ type: "left", position: 1700 }],
+            spacing: { after: 40 },
+            children: [t(l), t(`\t${vals[i]}`)],
+          }),
+      ),
+    });
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [new TableRow({ children: [box(left, leftVal), box(right, rightVal)] })],
+  });
+}
+
+function studentSheet(identity: AssessmentIdentity, questions: Question[], withIdentity: boolean): (Paragraph | Table)[] {
+  const out: (Paragraph | Table)[] = [];
+  if (withIdentity) {
+    out.push(
+      p([t(identity.schoolName.toUpperCase(), { bold: true, size: 26 })], { alignment: AlignmentType.CENTER, spacing: { after: 20 } }),
+      p([t(`${identity.assessmentType.toUpperCase()} — TAHUN PELAJARAN ${identity.academicYear}`, { bold: true, size: 22 })], {
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 160 },
+      }),
+    );
+  }
+  out.push(studentIdentityTable(identity), p([], { spacing: { after: 120 } }));
+  let n = 0;
+  groupByBentuk(questions).forEach((g, gi) => {
+    out.push(
+      p([t(`${ROMAN[gi] ?? gi + 1}.\t`, { bold: true }), t(instructionFor(g.bentuk), { bold: true })], {
+        indent: { left: 567, hanging: 567 },
+        spacing: { before: 200, after: 80 },
+      }),
+    );
+    g.items.forEach((q) => {
+      n += 1;
+      out.push(...studentQuestion(q, n));
+    });
+  });
+  return out;
+}
+
 export function buildDocx(
   identity: AssessmentIdentity,
   gridData: GridRow[],
   questionsData: Question[],
   exportType: ExportType,
 ): Document {
+  if (exportType === "soal") {
+    return new Document({
+      styles: { default: { document: { run: { font: FONT, size: 24, color: "000000" } } } },
+      sections: [
+        {
+          properties: {
+            page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, bottom: 1134, left: 1418, right: 1134 } },
+          },
+          footers: {
+            default: new Footer({
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ children: ["Halaman ", PageNumber.CURRENT], font: FONT, size: 16 })],
+                }),
+              ],
+            }),
+          },
+          children: studentSheet(identity, questionsData, true),
+        },
+      ],
+    });
+  }
+
   const children: (Paragraph | Table)[] = [...coverChildren(identity, identity.subject)];
   let firstPart = true;
 
@@ -399,17 +564,8 @@ export function buildDocx(
     ]);
   }
 
-  if (exportType === "soal" || exportType === "lengkap") {
-    const part: (Paragraph | Table)[] = [];
-    questionsData.forEach((q) => part.push(...questionChildren(q)));
-    const totalSkor = questionsData.reduce((s, q) => s + (Number(q.score) || 0), 0);
-    part.push(
-      p([t(`Total Skor Seluruh Soal: ${totalSkor}`, { bold: true })], {
-        spacing: { before: 240, after: 80 },
-        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: C.softBorder, space: 6 } },
-      }),
-    );
-    addPart("NASKAH SOAL ASESMEN", part);
+  if (exportType === "lengkap") {
+    addPart("NASKAH SOAL", studentSheet(identity, questionsData, false));
   }
 
   if (exportType === "kunci" || exportType === "lengkap") {
