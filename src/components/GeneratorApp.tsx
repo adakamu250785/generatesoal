@@ -1679,12 +1679,12 @@ Format JSON (1 objek soal tunggal):
               <p className="text-xs text-muted-foreground">
                 Dapatkan API Key gratis melalui link berikut:{" "}
                 <a
-                  href="https://aistudio.google.com/app/apikey"
+                  href="https://aistudio.google.com/api-keys"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-bold text-primary underline hover:text-primary/80"
                 >
-                  aistudio.google.com/app/apikey
+                  aistudio.google.com/api-keys
                 </a>
               </p>
             </div>
