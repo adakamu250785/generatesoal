@@ -90,12 +90,14 @@ const p = (children: TextRun[], opts: {
   pageBreakBefore?: boolean | undefined;
   border?: { bottom?: BorderSpec | undefined } | undefined;
 } = {}) => {
-  const args: ParaArgs = { children };
-  if (opts.alignment !== undefined) args.alignment = opts.alignment;
-  if (opts.spacing !== undefined) args.spacing = opts.spacing;
-  if (opts.indent !== undefined) args.indent = opts.indent;
-  if (opts.pageBreakBefore) args.pageBreakBefore = true;
-  if (opts.border !== undefined) args.border = opts.border;
+  const args = {
+    children,
+    ...(opts.alignment !== undefined ? { alignment: opts.alignment } : {}),
+    ...(opts.spacing !== undefined ? { spacing: opts.spacing } : {}),
+    ...(opts.indent !== undefined ? { indent: opts.indent } : {}),
+    ...(opts.pageBreakBefore ? { pageBreakBefore: true } : {}),
+    ...(opts.border !== undefined ? { border: opts.border } : {}),
+  } as ParaArgs;
   return new Paragraph(args);
 };
 
