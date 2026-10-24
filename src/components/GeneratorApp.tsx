@@ -562,8 +562,9 @@ Format JSON (1 objek soal tunggal):
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <button className="flex cursor-pointer items-center space-x-3 text-left" onClick={() => setActiveTab("dashboard")}>
-              <div className="rounded-lg bg-primary-dark p-2">
-                <Sparkles className="h-6 w-6 text-gold" />
+              <div className="flex flex-col items-center rounded-lg bg-primary-dark px-2 py-1">
+                <Sparkles className="h-5 w-5 text-gold" />
+                <span className="text-[8px] font-semibold leading-none text-primary-foreground/80">By: Maz Afan</span>
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">Generator Soal AI</h1>
