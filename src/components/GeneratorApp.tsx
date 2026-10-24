@@ -1676,6 +1676,17 @@ Format JSON (1 objek soal tunggal):
                   Simpan
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Dapatkan API Key gratis melalui link berikut:{" "}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-primary underline hover:text-primary/80"
+                >
+                  aistudio.google.com/app/apikey
+                </a>
+              </p>
             </div>
 
             {/* Backup & Restore */}
