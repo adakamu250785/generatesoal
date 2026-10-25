@@ -102,6 +102,13 @@ describe("format naskah soal siswa", () => {
   it("soal dikelompokkan per bentuk soal", () => {
     expect(groupByBentuk(questions).map((g) => g.bentuk)).toEqual(["Pilihan Ganda", "Uraian"]);
   });
+  it("tabel identitas lembar ujian memuat waktu ujian dari identitas", async () => {
+    const JSZip = (await import("jszip")).default;
+    const buf = await Packer.toBuffer(buildDocx({ ...identity, examDuration: "120" }, grid, questions, "soal"));
+    const xml = await (await JSZip.loadAsync(buf)).file("word/document.xml")!.async("string");
+    expect(xml).toContain("Waktu");
+    expect(xml).toContain("120 Menit");
+  });
   it("paket lengkap memuat kisi-kisi, naskah, kunci, dan rubrik", async () => {
     const JSZip = (await import("jszip")).default;
     const buf = await Packer.toBuffer(buildDocx(identity, grid, questions, "lengkap"));
