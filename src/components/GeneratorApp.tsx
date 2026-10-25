@@ -61,6 +61,27 @@ function Card({ className = "", children }: { className?: string; children: Reac
   return <div className={`rounded-2xl border border-border bg-card shadow-sm ${className}`}>{children}</div>;
 }
 
+/** Input angka yang mengizinkan kolom dikosongkan saat mengetik, lalu mengembalikan nilai terakhir saat dikosongkan lalu ditinggalkan. */
+function NumInput({ value, onChange, min, className }: { value: number; onChange: (v: number) => void; min?: number; className?: string }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  return (
+    <input
+      type="number"
+      min={min}
+      value={draft ?? String(value)}
+      onChange={(e) => {
+        if (e.target.value === "") { setDraft(""); return; }
+        const n = parseInt(e.target.value);
+        if (Number.isNaN(n)) return;
+        setDraft(null);
+        onChange(n);
+      }}
+      onBlur={() => setDraft(null)}
+      className={className}
+    />
+  );
+}
+
 export function GeneratorApp() {
   // Navigation
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
@@ -871,7 +892,7 @@ Format JSON (1 objek soal tunggal):
                           type="number"
                           min={5}
                           max={300}
-                          value={identity.examDuration || "90"}
+                          value={identity.examDuration}
                           onChange={(e) => setIdentity({ ...identity, examDuration: e.target.value })}
                           className={INPUT_CLASS}
                           placeholder="90"
