@@ -140,7 +140,7 @@ function coverChildren(identity: AssessmentIdentity, subj: string): (Paragraph |
   const rows: string[][] = [
     ["Mata Pelajaran", subj, "Kelas / Semester", `${identity.grade} / ${identity.semester}`],
     ["Jenjang", identity.level, "Tahun Pelajaran", identity.academicYear],
-    ["Jenis Asesmen", identity.assessmentType, "Alokasi Waktu", "90 Menit"],
+    ["Jenis Asesmen", identity.assessmentType, "Alokasi Waktu", `${identity.examDuration || "90"} Menit`],
   ];
 
   const identityTable = new Table({
@@ -469,7 +469,7 @@ function studentIdentityTable(identity: AssessmentIdentity): Table {
   const left = ["Nama Siswa", "No. Induk", "Hari Tanggal"];
   const leftVal = [": ....................................", ": ....................................", ": ...................................."];
   const right = ["Mata Pelajaran", "Kelas", "Waktu"];
-  const rightVal = [`: ${subj}`, `: ${identity.grade}`, ": 90 Menit"];
+  const rightVal = [`: ${subj}`, `: ${identity.grade}`, `: ${identity.examDuration || "90"} Menit`];
   const box = (labels: string[], vals: string[]) =>
     new TableCell({
       borders: bAll,

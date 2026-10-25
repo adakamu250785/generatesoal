@@ -865,6 +865,19 @@ Format JSON (1 objek soal tunggal):
                         </select>
                       </div>
 
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Waktu Ujian (Menit)</label>
+                        <input
+                          type="number"
+                          min={5}
+                          max={300}
+                          value={identity.examDuration || "90"}
+                          onChange={(e) => setIdentity({ ...identity, examDuration: e.target.value })}
+                          className={INPUT_CLASS}
+                          placeholder="90"
+                        />
+                      </div>
+
                       <div className="md:col-span-2">
                         <label className="mb-1 block text-xs font-semibold text-muted-foreground">Jenis Asesmen *</label>
                         <select value={identity.assessmentType} onChange={(e) => setIdentity({ ...identity, assessmentType: e.target.value })} className={INPUT_CLASS}>

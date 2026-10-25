@@ -7,6 +7,7 @@ export interface AssessmentIdentity {
   customSubject: string;
   semester: string;
   assessmentType: string;
+  examDuration: string;
 }
 
 export interface GridRow {
@@ -91,6 +92,7 @@ export const DEFAULT_IDENTITY: AssessmentIdentity = {
   customSubject: "",
   semester: "Semester 1 (Ganjil)",
   assessmentType: "Sumatif Lingkup Materi (Ulangan Harian)",
+  examDuration: "90",
 };
 
 export const DEFAULT_QUESTION_TYPES: QuestionTypes = {
