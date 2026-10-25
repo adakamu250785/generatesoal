@@ -1116,21 +1116,19 @@ Format JSON (1 objek soal tunggal):
                                 <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-2">
                                   <div>
                                     <span className="text-[10px] text-muted-foreground">Jumlah:</span>
-                                    <input
-                                      type="number"
-                                      min="1"
+                                    <NumInput
+                                      min={1}
                                       value={conf.count}
-                                      onChange={(e) => setQuestionTypes({ ...questionTypes, [item.key]: { ...conf, count: parseInt(e.target.value) || 0 } })}
+                                      onChange={(v) => setQuestionTypes({ ...questionTypes, [item.key]: { ...conf, count: v } })}
                                       className="w-full rounded border border-input bg-card p-1 text-xs font-bold"
                                     />
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-muted-foreground">Skor / Soal:</span>
-                                    <input
-                                      type="number"
-                                      min="1"
+                                    <NumInput
+                                      min={1}
                                       value={conf.weight}
-                                      onChange={(e) => setQuestionTypes({ ...questionTypes, [item.key]: { ...conf, weight: parseInt(e.target.value) || 1 } })}
+                                      onChange={(v) => setQuestionTypes({ ...questionTypes, [item.key]: { ...conf, weight: v } })}
                                       className="w-full rounded border border-input bg-card p-1 text-xs font-bold"
                                     />
                                   </div>
