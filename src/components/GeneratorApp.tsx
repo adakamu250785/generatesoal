@@ -1166,31 +1166,28 @@ Format JSON (1 objek soal tunggal):
                           <div className="grid grid-cols-3 gap-3">
                             <div>
                               <label className="text-[10px] font-bold text-success">Mudah:</label>
-                              <input
-                                type="number"
-                                min="0"
+                              <NumInput
+                                min={0}
                                 value={difficultyDist.mudah}
-                                onChange={(e) => setDifficultyDist({ ...difficultyDist, mudah: parseInt(e.target.value) || 0 })}
+                                onChange={(v) => setDifficultyDist({ ...difficultyDist, mudah: v })}
                                 className="w-full rounded border border-input bg-card p-1.5 text-xs font-bold"
                               />
                             </div>
                             <div>
                               <label className="text-[10px] font-bold text-warning">Sedang:</label>
-                              <input
-                                type="number"
-                                min="0"
+                              <NumInput
+                                min={0}
                                 value={difficultyDist.sedang}
-                                onChange={(e) => setDifficultyDist({ ...difficultyDist, sedang: parseInt(e.target.value) || 0 })}
+                                onChange={(v) => setDifficultyDist({ ...difficultyDist, sedang: v })}
                                 className="w-full rounded border border-input bg-card p-1.5 text-xs font-bold"
                               />
                             </div>
                             <div>
                               <label className="text-[10px] font-bold text-destructive">Sulit (HOTS):</label>
-                              <input
-                                type="number"
-                                min="0"
+                              <NumInput
+                                min={0}
                                 value={difficultyDist.sulit}
-                                onChange={(e) => setDifficultyDist({ ...difficultyDist, sulit: parseInt(e.target.value) || 0 })}
+                                onChange={(v) => setDifficultyDist({ ...difficultyDist, sulit: v })}
                                 className="w-full rounded border border-input bg-card p-1.5 text-xs font-bold"
                               />
                             </div>
@@ -1313,13 +1310,10 @@ Format JSON (1 objek soal tunggal):
                               </td>
                               <td className="border border-border p-2 font-semibold">{row.bentukSoal}</td>
                               <td className="w-12 border border-border p-2">
-                                <input
-                                  type="number"
+                                <NumInput
+                                  min={1}
                                   value={row.skor}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value) || 1;
-                                    setGridData(gridData.map((g, i) => (i === idx ? { ...g, skor: val } : g)));
-                                  }}
+                                  onChange={(val) => setGridData(gridData.map((g, i) => (i === idx ? { ...g, skor: val } : g)))}
                                   className="w-full rounded border border-border p-1 text-center font-bold"
                                 />
                               </td>
