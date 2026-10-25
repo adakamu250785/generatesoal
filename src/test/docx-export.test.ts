@@ -13,6 +13,7 @@ const identity: AssessmentIdentity = {
   customSubject: "",
   semester: "Semester 1 (Ganjil)",
   assessmentType: "Sumatif Lingkup Materi (Ulangan Harian)",
+  examDuration: "90",
 };
 
 const grid: GridRow[] = [
