@@ -30,6 +30,7 @@ import {
 import { PRESET_INSTRUCTIONS, SUBJECTS_DATA } from "@/lib/constants";
 import { exportAssessmentDocx } from "@/lib/docx-export";
 import { callGeminiAPI } from "@/lib/gemini";
+import { tkaInstruction } from "@/lib/tka";
 import { dbDelete, dbGetAll, dbPut, initDB } from "@/lib/idb";
 import {
   DEFAULT_IDENTITY,
@@ -115,6 +116,7 @@ export function GeneratorApp() {
 
   // Difficulty Setting
   const [difficultyMode, setDifficultyMode] = useState("Campuran");
+  const [tkaMode, setTkaMode] = useState(false);
   const [difficultyDist, setDifficultyDist] = useState({ mudah: 5, sedang: 7, sulit: 3 });
 
 
@@ -299,6 +301,7 @@ Cakupan Materi: ${finalMaterials.join("; ")}
 Bentuk & Jumlah Soal: ${activeTypes} (Total: ${totalQuestionsCount})
 Tingkat Kesulitan: ${difficultyMode === "Campuran" ? `Mudah: ${difficultyDist.mudah}, Sedang: ${difficultyDist.sedang}, Sulit: ${difficultyDist.sulit}` : difficultyMode}
 Instruksi Tambahan Guru: ${additionalInstruction || "Tidak ada"}
+${tkaMode ? "\n" + tkaInstruction(subj) + "\nIndikator soal harus dirumuskan berbasis stimulus (misal: 'Disajikan kasus/teks/data tentang ..., siswa dapat ...').\n" : ""}
 
 Buat JSON array untuk kisi-kisi dengan skema persis berikut:
 {
@@ -344,6 +347,7 @@ Buat JSON array untuk kisi-kisi dengan skema persis berikut:
     const prompt = `Berdasarkan Kisi-Kisi Soal berikut, hasilkan Paket Soal Lengkap beserta Kunci Jawaban, Pembahasan, dan Rubrik Penskoran.
 Detail Identitas: ${identity.level} Kelas ${identity.grade}, MP: ${subj}, ${identity.semester}, ${identity.assessmentType}.
 Instruksi Guru: ${additionalInstruction || "Terapkan kausa bahasa Indonesia yang baik dan sesuai konteks kelas."}
+${tkaMode ? "\n" + tkaInstruction(subj) + "\n" : ""}
 
 KISI-KISI SOAL:
 ${JSON.stringify(gridData, null, 2)}
@@ -1142,6 +1146,21 @@ Format JSON (1 objek soal tunggal):
                         <span>Total Seluruh Soal: {totalQuestionsCount} Soal</span>
                       </div>
                     </div>
+
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-primary/40 bg-primary-soft p-4">
+                      <input
+                        type="checkbox"
+                        checked={tkaMode}
+                        onChange={(e) => setTkaMode(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-primary"
+                      />
+                      <span>
+                        <span className="block text-xs font-bold text-primary-dark">Format Soal Berstandar TKA Kemendikdasmen</span>
+                        <span className="block text-[11px] text-muted-foreground">
+                          Soal diawali stimulus kontekstual sesuai karakter mata pelajaran (literasi kasus/teks untuk mapel sosial-humaniora, literasi-numerasi untuk mapel sains-matematika). Tingkat kesulitan tetap mengikuti pengaturan di bawah.
+                        </span>
+                      </span>
+                    </label>
 
                     <div className="space-y-3 border-t border-border pt-4">
                       <label className="block text-xs font-bold">Pengaturan Tingkat Kesulitan Soal:</label>
