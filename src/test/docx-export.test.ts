@@ -116,3 +116,22 @@ describe("format naskah soal siswa", () => {
     for (const s of ["KISI-KISI", "NASKAH SOAL", "KUNCI JAWABAN", "RUBRIK", "Nama Siswa"]) expect(xml).toContain(s);
   });
 });
+
+import { optionLayout } from "@/lib/docx-export";
+describe("tata letak opsi hemat kertas", () => {
+  it("3 opsi pendek kelas 1-2 jadi satu baris", () => {
+    expect(optionLayout(["A. ayam", "B. bebek", "C. angsa"])).toBe("row");
+  });
+  it("3 opsi panjang jadi vertikal", () => {
+    expect(optionLayout(["A. " + "x".repeat(40), "B. y", "C. z"])).toBe("vertical");
+  });
+  it("4 opsi pendek satu baris", () => {
+    expect(optionLayout(["A. 12", "B. 24", "C. 36", "D. 48"])).toBe("row");
+  });
+  it("4 opsi sedang jadi 2 kolom", () => {
+    expect(optionLayout(["A. " + "x".repeat(25), "B. y", "C. z", "D. w"])).toBe("two");
+  });
+  it("4 opsi panjang vertikal", () => {
+    expect(optionLayout(["A. " + "x".repeat(60), "B. y", "C. z", "D. w"])).toBe("vertical");
+  });
+});
