@@ -398,9 +398,51 @@ export function useTwoColumns(options: string[]): boolean {
   return options.length === 4 && options.every((o) => stripLetter(o).length <= 40);
 }
 
+/**
+ * Tata letak opsi hemat kertas:
+ * - "row": semua opsi dalam 1 baris mendatar jika muat
+ * - "two": 2 kolom (a|c, b|d) untuk 4 opsi ringkas
+ * - "vertical": turun ke bawah
+ * Lebar baris ±80 karakter (A4, Times 12pt, setelah indentasi).
+ */
+export function optionLayout(options: string[]): "row" | "two" | "vertical" {
+  const lens = options.map((o) => stripLetter(o).length + 3);
+  const n = options.length;
+  if (n >= 2 && n <= 5) {
+    const cell = Math.floor(80 / n) - 2;
+    if (lens.every((l) => l <= cell)) return "row";
+  }
+  if (useTwoColumns(options)) return "two";
+  return "vertical";
+}
+
 function optionsBlock(options: string[]): (Paragraph | Table)[] {
   const labeled = options.map((o, i) => `${String.fromCharCode(97 + i)}. ${stripLetter(o)}`);
-  if (!useTwoColumns(options)) {
+  const layout = optionLayout(options);
+  if (layout === "row") {
+    const w = Math.floor(100 / labeled.length);
+    return [
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        indent: { size: 567, type: WidthType.DXA },
+        borders: bTableNone,
+        rows: [
+          new TableRow({
+            children: labeled.map(
+              (o) =>
+                new TableCell({
+                  borders: bNoneAll,
+                  width: { size: w, type: WidthType.PERCENTAGE },
+                  margins: { top: 0, bottom: 0, left: 0, right: 80 },
+                  children: [new Paragraph({ children: [t(o)] })],
+                }),
+            ),
+          }),
+        ],
+      }),
+    ];
+  }
+  if (layout === "vertical") {
     return labeled.map((o) => p([t(o)], { indent: { left: 851, hanging: 284 }, spacing: { after: 20 } }));
   }
   const pc = (text: string) =>

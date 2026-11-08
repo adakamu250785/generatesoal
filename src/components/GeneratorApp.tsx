@@ -353,7 +353,7 @@ KISI-KISI SOAL:
 ${JSON.stringify(gridData, null, 2)}
 
 PERATURAN PENTING BENTUK SOAL:
-1. Pilihan Ganda (PG): Sediakan array 'options' (misal A, B, C, D atau A, B, C, D, E) dan 'answerKey' yang jelas.
+1. Pilihan Ganda (PG): ${identity.level === "SD" && ["1", "2"].includes(String(identity.grade).replace(/\D/g, "")) ? "WAJIB tepat 3 opsi (A, B, C) karena Kelas 1-2 SD (Fase A); jangan buat opsi D." : "WAJIB tepat 4 opsi (A, B, C, D)."} Buat opsi seringkas mungkin agar hemat kertas. Sediakan 'answerKey' yang jelas.
 2. Pilihan Ganda Kompleks (PGK): Sediakan array 'options', tandai beberapa jawaban benar pada 'answerKey' (misal: "A, C").
 3. Isian Singkat: 'answerKey' berupa kata/frasa singkat.
 4. Uraian: Sediakan 'answerKey' komprehensif dan 'rubrik' (pedoman penskoran bertahap).
