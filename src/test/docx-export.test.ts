@@ -139,9 +139,9 @@ describe("tata letak opsi hemat kertas", () => {
 import { assessmentTitle } from "@/lib/docx-export";
 describe("judul asesmen", () => {
   it("SAS semester ganjil tanpa singkatan", () => {
-    expect(assessmentTitle({ ...({} as never), assessmentType: "Sumatif Akhir Semester (SAS)", semester: "Semester 1 (Ganjil)", academicYear: "2026/2027" })).toBe("SUMATIF AKHIR SEMESTER GANJIL — TAHUN PELAJARAN 2026/2027");
+    expect(assessmentTitle({ ...({} as AssessmentIdentity), assessmentType: "Sumatif Akhir Semester (SAS)", semester: "Semester 1 (Ganjil)", academicYear: "2026/2027" })).toBe("SUMATIF AKHIR SEMESTER GANJIL — TAHUN PELAJARAN 2026/2027");
   });
   it("STS semester genap", () => {
-    expect(assessmentTitle({ ...({} as never), assessmentType: "Sumatif Tengah Semester (STS)", semester: "Semester 2 (Genap)", academicYear: "2026/2027" })).toBe("SUMATIF TENGAH SEMESTER GENAP — TAHUN PELAJARAN 2026/2027");
+    expect(assessmentTitle({ ...({} as AssessmentIdentity), assessmentType: "Sumatif Tengah Semester (STS)", semester: "Semester 2 (Genap)", academicYear: "2026/2027" })).toBe("SUMATIF TENGAH SEMESTER GENAP — TAHUN PELAJARAN 2026/2027");
   });
 });

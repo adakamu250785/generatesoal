@@ -154,11 +154,11 @@ function logoRun(dataUrl: string | undefined): ImageRun | null {
   if (!dataUrl) return null;
   const m = /^data:image\/(png|jpe?g);base64,(.+)$/i.exec(dataUrl);
   if (!m) return null;
-  const bin = atob(m[2]);
+  const bin = atob(m[2] ?? "");
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new ImageRun({
-    type: m[1].toLowerCase() === "png" ? "png" : "jpg",
+    type: (m[1] ?? "").toLowerCase() === "png" ? "png" : "jpg",
     data: bytes,
     transformation: { width: 80, height: 80 },
   });
