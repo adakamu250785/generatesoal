@@ -8,6 +8,10 @@ export interface AssessmentIdentity {
   semester: string;
   assessmentType: string;
   examDuration: string;
+  government?: string;
+  schoolAddress?: string;
+  schoolContact?: string;
+  logo?: string;
 }
 
 export interface GridRow {
@@ -93,6 +97,10 @@ export const DEFAULT_IDENTITY: AssessmentIdentity = {
   semester: "Semester 1 (Ganjil)",
   assessmentType: "Sumatif Lingkup Materi (Ulangan Harian)",
   examDuration: "90",
+  government: "",
+  schoolAddress: "",
+  schoolContact: "",
+  logo: "",
 };
 
 export const DEFAULT_QUESTION_TYPES: QuestionTypes = {

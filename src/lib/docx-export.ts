@@ -11,6 +11,7 @@ import {
   Document,
   Footer,
   Header,
+  ImageRun,
   PageNumber,
   Packer,
   Paragraph,
@@ -134,6 +135,68 @@ function cell(o: CellOpts): TableCell {
   } satisfies CellArgs);
 }
 
+// ---------- Kop sekolah ----------
+
+export function semesterLabel(semester: string): string {
+  if (/genap/i.test(semester)) return "GENAP";
+  if (/ganjil/i.test(semester)) return "GANJIL";
+  return "";
+}
+
+/** Judul asesmen tanpa singkatan dalam kurung + Ganjil/Genap. */
+export function assessmentTitle(identity: AssessmentIdentity): string {
+  const base = identity.assessmentType.replace(/\s*\([^)]*\)\s*/g, " ").trim().toUpperCase();
+  const sem = semesterLabel(identity.semester);
+  return `${base}${sem ? " " + sem : ""} — TAHUN PELAJARAN ${identity.academicYear}`;
+}
+
+function logoRun(dataUrl: string | undefined): ImageRun | null {
+  if (!dataUrl) return null;
+  const m = /^data:image\/(png|jpe?g);base64,(.+)$/i.exec(dataUrl);
+  if (!m) return null;
+  const bin = atob(m[2]);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new ImageRun({
+    type: m[1].toLowerCase() === "png" ? "png" : "jpg",
+    data: bytes,
+    transformation: { width: 80, height: 80 },
+  });
+}
+
+function letterhead(identity: AssessmentIdentity): (Paragraph | Table)[] {
+  const lines: Paragraph[] = [];
+  const c = AlignmentType.CENTER;
+  if (identity.government?.trim())
+    lines.push(p([t(identity.government.toUpperCase(), { bold: true, size: 24 })], { alignment: c, spacing: { after: 0 } }));
+  lines.push(p([t(identity.schoolName.toUpperCase(), { bold: true, size: 30 })], { alignment: c, spacing: { after: 0 } }));
+  if (identity.schoolAddress?.trim())
+    lines.push(p([t(identity.schoolAddress, { size: 20 })], { alignment: c, spacing: { after: 0 } }));
+  if (identity.schoolContact?.trim())
+    lines.push(p([t(identity.schoolContact, { size: 20 })], { alignment: c, spacing: { after: 0 } }));
+
+  const rule = new Paragraph({
+    spacing: { after: 160 },
+    border: { bottom: { style: BorderStyle.THICK_THIN_SMALL_GAP, size: 24, color: "000000", space: 1 } },
+    children: [],
+  });
+  const img = logoRun(identity.logo);
+  if (!img) return [...lines, rule];
+  const table = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: bTableNone,
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({ width: { size: 15, type: WidthType.PERCENTAGE }, borders: bNoneAll, verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ alignment: c, children: [img] })] }),
+          new TableCell({ width: { size: 85, type: WidthType.PERCENTAGE }, borders: bNoneAll, verticalAlign: VerticalAlign.CENTER, children: lines }),
+        ],
+      }),
+    ],
+  });
+  return [table, rule];
+}
+
 // ---------- Bagian kepala dokumen ----------
 
 function coverChildren(identity: AssessmentIdentity, subj: string): (Paragraph | Table)[] {
@@ -160,20 +223,9 @@ function coverChildren(identity: AssessmentIdentity, subj: string): (Paragraph |
   });
 
   return [
-    p([t(identity.schoolName.toUpperCase(), { bold: true, size: 28, color: C.primaryDark })], {
+    ...letterhead(identity),
+    p([t(assessmentTitle(identity), { bold: true, size: 24 })], {
       alignment: AlignmentType.CENTER,
-      spacing: { after: 60 },
-    }),
-    p([t(`NASKAH ASESMEN: ${identity.assessmentType.toUpperCase()}`, { bold: true, size: 24 })], {
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 40 },
-    }),
-    p([t(`TAHUN PELAJARAN ${identity.academicYear}`, { italics: true, size: 22, color: C.muted })], {
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 160 },
-    }),
-    p([], {
-      border: { bottom: { style: BorderStyle.DOUBLE, size: 6, color: C.primary, space: 1 } },
       spacing: { after: 240 },
     }),
     identityTable,
@@ -536,8 +588,8 @@ function studentSheet(identity: AssessmentIdentity, questions: Question[], withI
   const out: (Paragraph | Table)[] = [];
   if (withIdentity) {
     out.push(
-      p([t(identity.schoolName.toUpperCase(), { bold: true, size: 26 })], { alignment: AlignmentType.CENTER, spacing: { after: 20 } }),
-      p([t(`${identity.assessmentType.toUpperCase()} — TAHUN PELAJARAN ${identity.academicYear}`, { bold: true, size: 22 })], {
+      ...letterhead(identity),
+      p([t(assessmentTitle(identity), { bold: true, size: 22 })], {
         alignment: AlignmentType.CENTER,
         spacing: { after: 160 },
       }),
