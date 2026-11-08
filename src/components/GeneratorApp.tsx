@@ -152,12 +152,26 @@ export function GeneratorApp() {
           const res = await dbGetAll<{ key: string; value: string }>("settings");
           const keyItem = res.find((i) => i.key === "gemini_api_key");
           if (keyItem) setApiKey(keyItem.value);
+          const kop = res.find((i) => i.key === "kop_sekolah");
+          if (kop) {
+            try { setIdentity((prev) => ({ ...prev, ...JSON.parse(kop.value) })); } catch { /* abaikan */ }
+          }
         } catch (e) {
           console.error(e);
         }
       })
       .catch((err) => showNotification("Error IndexedDB: " + err, "error"));
   }, []);
+
+  const kopLoaded = useRef(false);
+  useEffect(() => {
+    if (!kopLoaded.current) { kopLoaded.current = true; return; }
+    const { schoolName, government, schoolAddress, schoolContact, logo } = identity;
+    const h = setTimeout(() => {
+      dbPut("settings", { key: "kop_sekolah", value: JSON.stringify({ schoolName, government, schoolAddress, schoolContact, logo }) }).catch(() => {});
+    }, 500);
+    return () => clearTimeout(h);
+  }, [identity.schoolName, identity.government, identity.schoolAddress, identity.schoolContact, identity.logo]);
 
   const saveApiKey = async (val: string) => {
     setApiKey(val);
@@ -834,6 +848,52 @@ Format JSON (1 objek soal tunggal):
                       <BookOpen className="h-5 w-5 text-primary" />
                       <span>Langkah 1: Identitas Asesmen Pendidikan</span>
                     </h3>
+
+                    <div className="space-y-3 rounded-xl border border-border bg-muted p-4">
+                      <p className="text-xs font-bold">Kop Sekolah (tampil di bagian atas naskah Word)</p>
+                      <div className="flex items-center gap-3">
+                        {identity.logo ? (
+                          <img src={identity.logo} alt="Logo sekolah" className="h-16 w-16 rounded border border-border bg-card object-contain" />
+                        ) : (
+                          <div className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-border text-[10px] text-muted-foreground">Logo</div>
+                        )}
+                        <label className="cursor-pointer rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
+                          {identity.logo ? "Ganti Logo" : "Unggah Logo"}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = "";
+                              if (!file) return;
+                              if (file.size > 1024 * 1024) { showNotification("Ukuran logo maksimal 1 MB.", "warning"); return; }
+                              const reader = new FileReader();
+                              reader.onload = () => setIdentity((prev) => ({ ...prev, logo: String(reader.result) }));
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+                        {identity.logo && (
+                          <button type="button" onClick={() => setIdentity({ ...identity, logo: "" })} className="text-xs font-semibold text-destructive hover:underline">Hapus</button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Pemerintah Kabupaten / Instansi</label>
+                          <input type="text" value={identity.government ?? ""} onChange={(e) => setIdentity({ ...identity, government: e.target.value })} className={INPUT_CLASS} placeholder="Contoh: PEMERINTAH KABUPATEN SUMENEP" />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Alamat Sekolah</label>
+                          <input type="text" value={identity.schoolAddress ?? ""} onChange={(e) => setIdentity({ ...identity, schoolAddress: e.target.value })} className={INPUT_CLASS} placeholder="Contoh: Jl. RA Kartini No.10 Sapeken, Sumenep" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Email / Website (opsional)</label>
+                          <input type="text" value={identity.schoolContact ?? ""} onChange={(e) => setIdentity({ ...identity, schoolContact: e.target.value })} className={INPUT_CLASS} placeholder="Contoh: Email: sekolah@gmail.com  Web: sekolah.sch.id" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Kop otomatis diingat untuk paket soal berikutnya.</p>
+                    </div>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
